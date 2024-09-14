@@ -29,7 +29,7 @@ To run the project, you need:
 
 1. **Clone the Repository**:
    ```bash
-   git clone <repository_url>
+   git clone https://github.com/Bfawaz2001/midnite
    cd midnite_take_home 
    ```
 
