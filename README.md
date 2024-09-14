@@ -33,17 +33,17 @@ To run the project, you need:
    cd midnite_take_home 
    ```
 
-2. **Create a Virtual Environment (Optional but recommended):**
+2. **Create a Virtual Environment** (Optional but recommended):
     ```bash
     python3 -m venv venv
     source venv/bin/activate  # On macOS/Linux
     venv\Scripts\activate     # On Windows
    ```
-3. **Install Dependencies: Install all the required dependencies via `pip`:**
+3. **Install Dependencies**: Install all the required dependencies via `pip`:
     ```bash
     pip install -r requirements.txt
     ```
-4. **Run the Flask Application: Start the Flask server on your local machine:**
+4. **Run the Flask Application**: Start the Flask server on your local machine:
    ```bash
    python app.py
    ```
@@ -71,10 +71,20 @@ You can test the API using `curl` commands or any API testing tool such as Postm
 ## Running Tests
 Unit tests are written using pytest. To run the tests:
 1. Ensure you are in the project root directory.
-2. Run the following command:
-    ```bash 
-    pytest
-    ```
+2. Set the `PYTHONPATH` before running the tests:
+
+For macOS/Linux: 
+```bash
+PYTHONPATH=. pytest
+```
+
+For Windows:
+
+```bash 
+set PYTHONPATH=. && pytest
+```
+
+
 This will run all test cases in the `tests/` folder. The tests cover various alert conditions, including:
 - Deposit and withdrawal scenarios.
 - Handling consecutive actions.
@@ -96,34 +106,41 @@ This will run all test cases in the `tests/` folder. The tests cover various ale
 └── requirements.txt       # Project dependencies
 ```
 ---
-## Challenges Faced
+## Challenges & Solutions
 
 ### 1. Handling Invalid or Missing Data
-One of the main challenges was ensuring that the API handled cases where the payload had missing or invalid fields. Initially, the API would return a `500 Internal Server Error` due to uncaught `KeyError` exceptions when trying to access fields like `type` or `amount` when they were not present in the request payload. 
+One of the main challenges was ensuring that the API handled cases where the payload had missing or invalid fields. Initially, the API would return a `500 Internal Server Error` due to uncaught `KeyError` exceptions when trying to access fields like `type` or `amount` when they were not present in the request payload.
 
-**Solution**: We added validation to check for required fields before processing the request, ensuring that the API returns proper error responses (such as `400 Bad Request`) for missing or invalid data.
+**Solution**: I added validation to check for required fields before processing the request, ensuring that the API returns proper error responses (such as `400 Bad Request`) for missing or invalid data.
+
 
 ### 2. Testing with Pytest
 Some of the test cases initially failed, especially when testing edge cases like missing fields, invalid data types, negative amounts, and large values. These issues were primarily due to the API not handling exceptions properly, which resulted in `500 Internal Server Errors` instead of expected `400 Bad Request` responses.
 
-**Solution**: We adjusted the API to handle exceptions more gracefully and ensure that invalid inputs were caught early in the request processing pipeline, allowing the tests to pass successfully.
+**Solution**: I adjusted the API to handle exceptions more gracefully and ensured that invalid inputs were caught early in the request processing pipeline, allowing the tests to pass successfully.
+
 
 ### 3. Understanding How to Use Curl
 Initially, there was confusion about how to use `curl` for testing the API endpoints. The Flask server needed to be running in the background while `curl` commands were executed from another terminal, which was unclear at first.
 
-**Solution**: After troubleshooting, we confirmed that the Flask app needed to be running in one terminal, and the `curl` commands should be executed in a separate terminal window. Once this was understood, testing with `curl` worked as expected.
+**Solution**: After troubleshooting, I confirmed that the Flask app needed to be running in one terminal, and the `curl` commands should be executed in a separate terminal window. Once this was understood, testing with `curl` worked as expected.
+
 
 ### 4. Implementing Consecutive Event Logic
 Another challenge was correctly implementing the logic for tracking consecutive deposits and withdrawals. For example, detecting when three consecutive withdrawals occur or when three consecutive deposits increase in amount was tricky because the system had to track the history of user actions.
 
-**Solution**: We used an in-memory dictionary to store user actions, ensuring that consecutive actions could be tracked efficiently without a database. This approach worked for the scope of this project, but for a larger-scale system, a persistent storage solution like a database or a caching system like Redis would be more appropriate.
+**Solution**: I used an in-memory dictionary to store user actions, ensuring that consecutive actions could be tracked efficiently without a database. This approach worked for the scope of this project, but for a larger-scale system, a persistent storage solution like a database or a caching system like Redis would be more appropriate.
+
 
 ### 5. Edge Case Handling
-We encountered edge cases, such as handling negative amounts, non-sequential timestamps, and large values, which initially caused the system to behave unexpectedly or fail. For instance, negative withdrawal amounts or very large deposit amounts weren't handled properly, causing exceptions.
+I encountered edge cases, such as handling negative amounts, non-sequential timestamps, and large values, which initially caused the system to behave unexpectedly or fail. For instance, negative withdrawal amounts or very large deposit amounts weren't handled properly, causing exceptions.
 
 **Solution**: Input validation was added to ensure that such edge cases were properly handled, and tests were written to verify that the system responded correctly to these scenarios.
 
+### 6. Test Failures Due to State Persistence
+During testing, some tests failed when run together because they were sharing state. Specifically, tests involving the same `user_id` would fail with errors such as "Time must be sequential and increasing" due to previously recorded actions from earlier tests.
 
+**Solution**: I incremented the `user_id` for each test to ensure no test shared state with another. This allowed each test to run in isolation without being affected by the user actions from previous tests.
 
 ---
 ## License
