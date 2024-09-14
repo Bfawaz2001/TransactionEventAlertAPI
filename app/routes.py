@@ -1,11 +1,30 @@
 from flask import request, jsonify
 from app import app
 
+"""
+This module contains the API logic for handling deposit and withdrawal events,
+validating the request payload, and triggering alerts based on certain conditions.
+"""
+
+
+# Dictionary to store user actions for tracking
 user_actions = {}
 
 
-# Function to validate payload
+# Function to validate the incoming request payload
 def validate_payload(data):
+    """
+    Validates the payload data to ensure it contains the required fields
+    and follows the expected format.
+
+    Args:
+        data (dict): The incoming request data (JSON).
+
+    Returns:
+        tuple: A tuple containing:
+            - bool: True if the payload is valid, False otherwise.
+            - str: An error message if validation fails, otherwise None.
+    """
     required_fields = ['type', 'amount', 'user_id', 'time']
 
     # Check if all required fields are present
@@ -22,7 +41,6 @@ def validate_payload(data):
         amount = float(data['amount'])
         if amount < 0:
             return False, "Amount cannot be negative."
-        # Remove any limits on the size of the amount
     except ValueError:
         return False, "Invalid amount. Must be a valid number."
 
@@ -46,9 +64,20 @@ def validate_payload(data):
 
 @app.route('/event', methods=['POST'])
 def event():
+    """
+    Handles the /event POST endpoint, which accepts deposit or withdrawal actions.
+    Based on the actions provided, it may trigger alerts if certain conditions are met.
+
+    Returns:
+        Response: A JSON response containing:
+            - alert (bool): Indicates whether an alert was triggered.
+            - alert_codes (list): List of triggered alert codes.
+            - user_id (int): The user ID associated with the action.
+    """
     data = request.json
     print(f"Received request data: {data}")  # Log the incoming request data
 
+    # Validate the request payload
     is_valid, error_message = validate_payload(data)
 
     # If payload validation fails, return a 400 Bad Request
@@ -92,6 +121,7 @@ def event():
 
     print(f"Returning alert codes: {alert_codes}")  # Log the generated alert codes
 
+    # Return the response as JSON
     return jsonify({
         "alert": bool(alert_codes),
         "alert_codes": alert_codes,
