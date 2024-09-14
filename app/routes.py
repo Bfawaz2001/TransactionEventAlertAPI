@@ -47,10 +47,13 @@ def validate_payload(data):
 @app.route('/event', methods=['POST'])
 def event():
     data = request.json
+    print(f"Received request data: {data}")  # Log the incoming request data
+
     is_valid, error_message = validate_payload(data)
 
     # If payload validation fails, return a 400 Bad Request
     if not is_valid:
+        print(f"Validation failed: {error_message}")  # Log validation failure reason
         return jsonify({"error": error_message}), 400
 
     user_id = data['user_id']
@@ -86,6 +89,8 @@ def event():
     total_deposits = sum(float(deposit['amount']) for deposit in recent_deposits)
     if total_deposits > 200:
         alert_codes.append(123)
+
+    print(f"Returning alert codes: {alert_codes}")  # Log the generated alert codes
 
     return jsonify({
         "alert": bool(alert_codes),
